@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -18,9 +19,17 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
-	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Create rule %s success.\n", args[0])
+		// 不输入 --name 从配置文件中读取 name
+		if len(name) == 0 {
+			name = viper.GetString("name")
+			// 配置文件中未读取到 name，打印帮助提示
+			if len(name) == 0 {
+				cmd.Help()
+				return
+			}
+		}
+		fmt.Printf("Create rule %s success.\n", name)
 	},
 }
 
@@ -39,11 +48,13 @@ func init() {
 	// will be global for your application.
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.auto.yaml)")
-
+	//viper.AddConfigPath("./cmd/config.yaml") // 可设置多个搜索路径
+	//viper.ReadInConfig()
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	// 在指定标志时可以用 --name，也可以使用短写 -n
-	rootCmd.Flags().StringVarP(&name, "name", "n", "", "createCmd下的name参数")
+	// 加载优先级比较高
+	rootCmd.Flags().StringVarP(&name, "name", "n", "./cmd/config.yaml", "createCmd下的name参数")
 
 }
