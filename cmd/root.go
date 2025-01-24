@@ -11,6 +11,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+var conf Conf
+
+type Conf struct {
+	Name string `mapstructure:"name"`
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "auto",
@@ -30,6 +36,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 		fmt.Printf("Create rule %s success.\n", name)
+		fmt.Print("----" + conf.Name + "\n")
 	},
 }
 
@@ -56,5 +63,14 @@ func init() {
 	// 在指定标志时可以用 --name，也可以使用短写 -n
 	// 加载优先级比较高
 	rootCmd.Flags().StringVarP(&name, "name", "n", "./cmd/config.yaml", "createCmd下的name参数")
+	viper.SetConfigFile(name)   // 指定配置文件路径
+	err := viper.ReadInConfig() // 读取配置信息
+	if err != nil {             // 读取配置信息失败
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 
+	}
+	// 将读取的配置信息保存至全局变量Conf
+	if err := viper.Unmarshal(&conf); err != nil {
+		panic(fmt.Errorf("unmarshal conf failed, err:%s \n", err))
+	}
 }
